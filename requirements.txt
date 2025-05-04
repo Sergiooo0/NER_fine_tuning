@@ -1,0 +1,15 @@
+accelerate
+evaluate
+joblib
+numpy
+python-crfsuite
+scikit-learn
+scipy
+seqeval
+six
+sklearn-crfsuite
+tabulate
+threadpoolctl
+torch
+tqdm
+transformers
