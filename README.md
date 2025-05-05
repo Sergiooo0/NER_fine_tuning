@@ -1,0 +1,1 @@
+Este proyecto realiza el fine-tuning de modelos de lenguaje para Reconocimiento de Entidades Nombradas (NER) sobre datos en español, combinando técnicas modernas (Transformers) con modelos clásicos (CRF) para maximizar el rendimiento.
