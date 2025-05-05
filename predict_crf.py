@@ -3,6 +3,12 @@ import pickle
 import sys
 
 
+"""
+Para ejecutar el script:
+python predict_crf.py data/ner-es.train.csv data/ner-es-complete.train.csv
+Se puede usar otro modelo con el argumento -m, por ejemplo:
+python predict_crf.py -m crf.es.model data/ner-es.train.csv data/ner-es-complete.train.csv
+"""
 class IOB:
     def __init__(self, sep=" "):
         self._sep = sep
@@ -94,7 +100,7 @@ def parse_args():
     parser.add_argument(
         '-m',
         '--model',
-        default='crf.model',
+        default='crf.es.model',
         type=str,
         metavar='FILE',
         help='model file',
@@ -104,6 +110,12 @@ def parse_args():
         metavar='input file',
         type=str,
         help='dataset file (IOB2)'
+    )
+    parser.add_argument(
+        'output',
+        metavar='output file',
+        type=str,
+        help='output dataset file (IOB2)'
     )
     return parser.parse_args()
 
@@ -121,6 +133,7 @@ def predict(args):
     X = [feats.sent2features(s) for s in sentences]
     y_pred = crf.predict(X)
 
+    """
     for i, sentence in enumerate(sentences):
         for j, token in enumerate(sentence):
             if len(token) > 1:
@@ -128,6 +141,17 @@ def predict(args):
             else:
                 print("{} {}".format(token[0], y_pred[i][j]))
         print()
+    """
+
+    # Save the result in the new output file:
+    with open(args.output, 'w') as f:
+        for i, sentence in enumerate(sentences):
+            for j, token in enumerate(sentence):
+                if len(token) > 1:
+                    f.write("{} {}\n".format(token[0], token[1]))
+                else:
+                    f.write("{} {}\n".format(token[0], y_pred[i][j]))
+    print("Predictions saved to {}".format(args.output))
 
 
 if __name__ == '__main__':
