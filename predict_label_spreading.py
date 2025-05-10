@@ -133,7 +133,13 @@ def predict_with_label_propagation(args):
     X_vect = vec.fit_transform(X_all)
 
     # Apply label propagation
-    label_prop = LabelSpreading(kernel='rbf', alpha=0.8, max_iter=1000)
+    
+    # label_prop = LabelSpreading(kernel='rbf', alpha=0.8, max_iter=1000)
+    # Use kernel='rbf' is not a good idea for this case
+    # because we have 264.700 samples:
+    # 70074031225 = 264700^2
+    # 264700^2 * 8 bytes ≈ 522 GB
+    label_prop = LabelSpreading(kernel='knn', n_neighbors=10, alpha=0.8, max_iter=1000)
     label_prop.fit(X_vect, y_encoded)
     y_propagated = label_prop.transduction_
     y_final = le.inverse_transform(y_propagated)
