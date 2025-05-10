@@ -5,7 +5,7 @@ MODEL="dccuchile/bert-base-spanish-wwm-cased"
 ##### defs ################################################################
 MAX_LENGTH=128
 BATCH_SIZE=32
-NUM_EPOCHS=1
+NUM_EPOCHS=3
 SAVE_STEPS=100
 SAVE_TOTAL_LIMIT=2
 LOGGING_STEPS=100
