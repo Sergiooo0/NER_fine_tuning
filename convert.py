@@ -14,43 +14,38 @@ class IOB:
         ]
 
     def _parse_sentence(self, raw_sentence):
-        return [
-            tuple(token.split(self._sep))
-            for token in raw_sentence.strip().split("\n")
-        ]
+        sentence = []
+        for line in raw_sentence.strip().split("\n"):
+            parts = line.strip().split(self._sep)
+            if len(parts) != 2:
+                print(f"Advertencia: liña mal formada omitida -> '{line}'", file=sys.stderr)
+                continue
+            token, label = parts
+            sentence.append((token, label))
+        return sentence
 
     def _read_sentences_from_file(self, ifile):
         raw_sentence = ""
         try:
-            with open(ifile) as fhi:
+            with open(ifile, encoding="utf-8") as fhi:
                 for line in fhi:
-                    if line == "\n":
-                        if raw_sentence == "":
-                            continue
-                        yield raw_sentence
-                        raw_sentence = ""
-                        continue
-
-                    if line:
+                    if line.strip() == "":
+                        if raw_sentence.strip():
+                            yield raw_sentence.strip()
+                            raw_sentence = ""
+                    else:
                         raw_sentence += line
-
-            if raw_sentence:
-                yield raw_sentence
+                if raw_sentence.strip():
+                    yield raw_sentence.strip()
         except IOError:
-            print("Unable to read file: " + ifile)
-            sys.exit()
+            print(f"Non se puido ler o ficheiro: {ifile}", file=sys.stderr)
+            sys.exit(1)
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Convert IOB format to JSON.")
-    parser.add_argument(
-        "iobfile",
-        help="Input file in IOB format"
-    )
-    parser.add_argument(
-        "jsonfile",
-        help="Output file in JSON format"
-    )
+    parser = argparse.ArgumentParser(description="Convert IOB format to JSONL.")
+    parser.add_argument("iobfile", help="Ficheiro de entrada no formato IOB")
+    parser.add_argument("jsonfile", help="Ficheiro de saída en formato JSONL")
     return parser.parse_args()
 
 
@@ -58,17 +53,15 @@ def convert_to_json(ifile, ofile):
     iob = IOB()
     sentences = iob.parse_file(ifile)
 
-    jsonl = [
-        {
-            "tokens": [token[0] for token in sentence],
-            "labels": [token[1] for token in sentence],
-        }
-        for sentence in sentences
-    ]
+    with open(ofile, "w", encoding="utf-8") as f:
+        for sentence in sentences:
+            if sentence:  
+                json_obj = {
+                    "tokens": [token for token, _ in sentence],
+                    "labels": [label for _, label in sentence],
+                }
+                f.write(json.dumps(json_obj, ensure_ascii=False) + "\n")
 
-    with open(ofile, "w") as f:
-        for sentence in jsonl:
-            f.write(json.dumps(sentence, ensure_ascii=False) + "\n")
 
 if __name__ == "__main__":
     args = parse_args()

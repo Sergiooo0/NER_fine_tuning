@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MODEL=$1
+MODEL="dccuchile/bert-base-spanish-wwm-cased"
 
 ##### defs ################################################################
 MAX_LENGTH=128
@@ -11,8 +11,8 @@ SAVE_TOTAL_LIMIT=2
 LOGGING_STEPS=100
 LOAD_BEST_MODEL_AT_END=True
 SAVE_STRATEGY="no"
-TRAIN_FILE="data/ner-es.train.json"
-VALIDATION_FILE="data/ner-es.valid.json"
+TRAIN_FILE="data/ner-es-complete.train.jsonl"
+VALIDATION_FILE="data/ner-es.valid.jsonl"
 ###########################################################################
 
 if [ -z "$MODEL" ]; then
@@ -36,6 +36,7 @@ time python3 run_ner.py \
   --save_total_limit ${SAVE_TOTAL_LIMIT} \
   --logging_steps ${LOGGING_STEPS} \
   --do_train \
+  --do_eval \
   --overwrite_output_dir \
   --load_best_model_at_end ${LOAD_BEST_MODEL_AT_END} \
   --save_strategy ${SAVE_STRATEGY}
