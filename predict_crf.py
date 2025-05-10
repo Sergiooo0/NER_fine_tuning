@@ -59,8 +59,18 @@ class CRFFeatures:
             'word.isupper()': word.isupper(),
             'word.istitle()': word.istitle(),
             'word.isdigit()': word.isdigit(),
+            'word.len()': len(word),
         }
 
+        # Sufijos y prefijos
+        features.update({
+            'word[-2:]': word[-2:],
+            'word[-1:]': word[-1:],
+            'word[:2]': word[:2],
+            'word[:3]': word[:3],
+        })
+
+        # Características de la palabra anterior y posterior
         if i > 0:
             word1 = sent[i-1][0]
             features.update({
@@ -69,7 +79,7 @@ class CRFFeatures:
                 '-1:word.isupper()': word1.isupper(),
             })
         else:
-            features['BOS'] = True
+            features['BOS'] = True  # Beginning of sentence
 
         if i < len(sent)-1:
             word1 = sent[i+1][0]
@@ -79,9 +89,10 @@ class CRFFeatures:
                 '+1:word.isupper()': word1.isupper(),
             })
         else:
-            features['EOS'] = True
+            features['EOS'] = True  # End of sentence
 
         return features
+
 
     def sent2features(self, sent):
         return [self.word2features(sent, i) for i in range(len(sent))]
@@ -133,25 +144,23 @@ def predict(args):
     X = [feats.sent2features(s) for s in sentences]
     y_pred = crf.predict(X)
 
-    """
-    for i, sentence in enumerate(sentences):
-        for j, token in enumerate(sentence):
-            if len(token) > 1:
-                print("{} {}".format(token[0], token[1]))
-            else:
-                print("{} {}".format(token[0], y_pred[i][j]))
-        print()
-    """
-
-    # Save the result in the new output file:
+    # Guardar el resultado en el archivo de salida:
     with open(args.output, 'w') as f:
+        idx = 0  
         for i, sentence in enumerate(sentences):
             for j, token in enumerate(sentence):
-                if len(token) > 1:
-                    f.write("{} {}\n".format(token[0], token[1]))
+                word = token[0]  
+                true_label = token[1] if len(token) > 1 else 'O'  
+
+                # Escribe la predicción solo si la palabra no tiene etiqueta (O)
+                if true_label == 'O':  # Solo predice en los casos donde la etiqueta es 'O'
+                    f.write("{} {}\n".format(word, y_pred[i][j]))
                 else:
-                    f.write("{} {}\n".format(token[0], y_pred[i][j]))
+                    f.write("{} {}\n".format(word, true_label))  # Usa la etiqueta verdadera si existe
+            f.write("\n")  # Escribe una nueva línea después de cada oración
+
     print("Predictions saved to {}".format(args.output))
+
 
 
 if __name__ == '__main__':
