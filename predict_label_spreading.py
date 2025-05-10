@@ -11,10 +11,28 @@ class IOB:
         self._sep = sep
 
     def parse_file(self, ifile):
-        return [
-            self._parse_sentence(raw)
-            for raw in self._read_sentences_from_file(ifile)
-        ]
+        sentences = []
+        current = []
+
+        with open(ifile, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line == "":
+                    if current:
+                        sentences.append(current)
+                        current = []
+                else:
+                    parts = line.split(self._sep)
+                    if len(parts) == 2:
+                        current.append((parts[0], parts[1]))
+                    elif len(parts) == 1:
+                        current.append((parts[0], None))
+                    else:
+                        raise ValueError(f"Línea inválida: {line}")
+            if current:
+                sentences.append(current)
+        return sentences
+
 
     def _parse_sentence(self, raw_sentence):
         return [
@@ -79,7 +97,8 @@ class CRFFeatures:
         return [self.word2features(sent, i) for i in range(len(sent))]
 
     def sent2labels(self, sent):
-        return [token[-1] for token in sent]
+        return [label if label is not None else "O" for _, label in sent]
+
 
 
 def parse_args():
@@ -142,6 +161,7 @@ def predict_with_label_propagation(args):
     # Encode labels
     le = LabelEncoder()
     known_labels = [l for l in labels if l != -1]
+    print(f"Known labels: {set(known_labels)}")
     print("Encoding labels...")
     le.fit(known_labels)
     y_encoded = [le.transform([l])[0] if l != -1 else -1 for l in labels]
@@ -160,12 +180,17 @@ def predict_with_label_propagation(args):
     y_final = le.inverse_transform(y_propagated)
     print("Label propagation completed.")
 
-    # Write final output
+    # Save predictions to output file
+    print("Saving predictions to output file...")
+    idx = 0
     with open(args.output, 'w') as f:
-        for i, (token, label) in enumerate(zip(flat_tokens, y_final)):
-            f.write(f"{token[0]} {label}\n")
-            if token[0] in [".", "!", "?"]:
-                f.write("\n")
+        for sentence in sentences:
+            for token, gold_label in sentence:
+                pred_label = y_final[idx]
+                f.write(f"{token} {pred_label}\n")
+                idx += 1
+            f.write("\n")  # línea vacía al final de cada oración
+
 
     print(f"Predictions with label propagation (context windows) saved to {args.output}")
 
