@@ -150,10 +150,10 @@ def predict(args):
         for i, sentence in enumerate(sentences):
             for j, token in enumerate(sentence):
                 word = token[0]  
-                true_label = token[1] if len(token) > 1 else 'O'  
+                true_label = token[1] if len(token) > 1 else None  # Asigna None si no hay etiqueta  
 
-                # Escribe la predicción solo si la palabra no tiene etiqueta (O)
-                if true_label == 'O':  # Solo predice en los casos donde la etiqueta es 'O'
+                # Escribe la predicción solo si la palabra no tiene etiqueta
+                if true_label == None:  # Solo predice en los casos donde la etiqueta es None
                     f.write("{} {}\n".format(word, y_pred[i][j]))
                 else:
                     f.write("{} {}\n".format(word, true_label))  # Usa la etiqueta verdadera si existe
