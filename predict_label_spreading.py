@@ -4,7 +4,7 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.semi_supervised import LabelSpreading
 from sklearn.preprocessing import LabelEncoder
 
-
+# python predict_label_spreading.py data/ner-es.train.csv  data/ner-es-propagation.train.csv
 class IOB:
     def __init__(self, sep=" "):
         self._sep = sep
