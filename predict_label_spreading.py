@@ -94,7 +94,15 @@ def run_label_propagation(args):
     print("Fitting label propagation model...")
     label_prop.fit(X_vect, y_encoded)
     y_propagated = label_prop.transduction_
-    y_final = le.inverse_transform(y_propagated)
+
+    # Construimos etiquetas finales, preservando las originales
+    y_final = []
+    for orig_label, propagated in zip(labels, y_propagated):
+        if orig_label != -1:
+            y_final.append(orig_label)
+        else:
+            y_final.append(le.inverse_transform([propagated])[0])
+
     print("Label propagation completed.")
 
     print("Saving predictions to output file...")
